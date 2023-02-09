@@ -1,10 +1,10 @@
 // Unsere Welt
 
 let world;
+let isPaused = true;
 
 // Unsere Einstellungen
 
-let isPaused = true;
 const canvasSize = 600;
 const gridSize = 128;
 const cellSize = canvasSize / gridSize;
@@ -12,7 +12,7 @@ const cellSize = canvasSize / gridSize;
 // Eine Funktion mit dem Namen "setup", die EINMALIG zu Beginn aufgerufen wird.
 
 function setup() {
-  createCanvas(canvasSize, canvasSize);
+  createCanvas(600, 600);
   world = createGrid(gridSize);
   noStroke();
   frameRate(10);
@@ -51,33 +51,33 @@ function keyPressed() {
 function fate(world) {
   const newWorld = [];
   world.forEach((row, indexY) => {
+
     newWorld[indexY] = [];
     row.forEach((cell, indexX) => {
-      // Für jede Zelle soll folgendes ausgeführt werden:
       const newCell = new Cell(cell.isAlive);
-      
-      const livingNeighbours = 
+      newWorld[indexY][indexX] = newCell;
+      const neighbours = 
         world[mod(indexY - 1, gridSize)][mod(indexX, gridSize)].isAlive + // DRÜBER
         world[mod(indexY + 1, gridSize)][mod(indexX, gridSize)].isAlive + // DRUNTER
         world[mod(indexY - 1, gridSize)][mod(indexX - 1, gridSize)].isAlive + // DRÜBER LINKS
         world[mod(indexY - 1, gridSize)][mod(indexX + 1, gridSize)].isAlive + // DRÜBER RECHTS
         world[mod(indexY, gridSize)][mod(indexX - 1, gridSize)].isAlive + // LINKS
         world[mod(indexY, gridSize)][mod(indexX + 1, gridSize)].isAlive + // RECHTS
-        world[mod(indexY + 1, gridSize)][mod(indexX - 1, gridSize)].isAlive + // DRUNTER LINKS
+        world[mod(indexY + 1, gridSize)][mod(indexX - 1, gridSize)].isAlive + // DRUNTER RECHTS
         world[mod(indexY + 1, gridSize)][mod(indexX + 1, gridSize)].isAlive; // DRUNTER RECHTS
-
       if(cell.isAlive) {
-        if(livingNeighbours < 2) newCell.kill();
-        if(livingNeighbours > 3) newCell.kill();
+        if(neighbours < 2) newCell.kill();
+        if(neighbours > 3) newCell.kill();
+      } else {
+        if(neighbours === 3) newCell.revive();
       }
-
-      if(!cell.isAlive) {
-        if(livingNeighbours === 3) newCell.revive();
-      }
-
-      newWorld[indexY][indexX] = newCell;
+      
     });
   });
+  if(Math.random() > 0.5) {
+    const position = getRandomCoordinates();
+    newWorld[position.y][position.x].revive();
+  }
   return newWorld;
 }
 
@@ -104,7 +104,7 @@ function createGrid(size) {
   for(x = 0; x < size; x++) {
     newGrid[x] = [];
     for(y = 0; y < size; y++) {
-      newGrid[x][y] = new Cell(Math.random() > 0.9);
+      newGrid[x][y] = new Cell(Math.random() > 0.7);
     }
   }
   return newGrid;
